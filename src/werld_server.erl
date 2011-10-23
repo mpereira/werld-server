@@ -19,7 +19,7 @@ client_manager(ClientList) ->
   receive
     {Socket, {all}} ->
       io:format("~p all ~w~n", [erlang:localtime(), Socket]),
-      Content = case lists:map(fun werld_server:client_client_data/1, ClientList) of
+      Content = case lists:map(fun werld_server:player_client_data/1, player_list(ClientList)) of
                   [] -> <<0>>;
                   L -> list_to_binary(L)
                 end,
