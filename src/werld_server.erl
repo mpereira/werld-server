@@ -19,11 +19,13 @@ client_manager(ClientList) ->
   receive
     {Socket, {all}} ->
       io:format("~p all ~w~n", [erlang:localtime(), Socket]),
-      Content = case lists:map(fun werld_server:player_client_data/1, player_list(ClientList)) of
+      PlayerList = player_list(ClientList),
+      Content = case lists:map(fun werld_server:player_to_binary/1, PlayerList) of
                   [] -> <<0>>;
                   L -> list_to_binary(L)
                 end,
-      gen_tcp:send(Socket, Content),
+      PlayerListLength = length(PlayerList),
+      gen_tcp:send(Socket, <<PlayerListLength:4/native-unit:8, Content/binary>>),
       client_manager(ClientList);
     {event, Client} ->
       NewClientList = case lists:member(Client#client.socket, client_list_sockets(ClientList)) of
@@ -44,12 +46,12 @@ client_list_sockets(ClientList) ->
   lists:map(fun(Client) -> Client#client.socket end, ClientList).
 
 send_data(Client, ClientList) ->
-  gen_tcp:send(Client#client.socket, lists:map(fun werld_server:player_client_data/1, player_list(ClientList))).
+  gen_tcp:send(Client#client.socket, lists:map(fun werld_server:player_to_binary/1, player_list(ClientList))).
 
 player_list(ClientList) ->
   lists:map(fun(Client) -> Client#client.player end, ClientList).
 
-player_client_data(#player{id = Id, name = Name, y = Y, x = X}) ->
+player_to_binary(#player{id = Id, name = Name, y = Y, x = X}) ->
   <<Id:4/bytes, Name:20/bytes, Y:4/bytes, X:4/bytes>>.
 
 connect(Listen) ->
@@ -65,7 +67,7 @@ loop(Socket) ->
   receive
     {tcp, Socket, <<Id:4/bytes, Name:20/bytes, Y:4/bytes, X:4/bytes>>} ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
-      io:format("~p ~p [~w]~n",
+      io:format("~p ~p [~p]~n",
                 [erlang:localtime(),
                  inet:peername(Socket),
                  Player]),
