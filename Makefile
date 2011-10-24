@@ -1,4 +1,3 @@
-SRC_DIR  = src
 EBIN_DIR = ebin
 
 all: werld_server
