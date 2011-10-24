@@ -30,13 +30,13 @@ client_manager(ClientList) ->
     {event, Client} ->
       NewClientList = case lists:member(Client#client.socket, client_list_sockets(ClientList)) of
                         true ->
-                          ClientList;
+                          [Client | lists:keydelete(Client#client.socket, 2, ClientList)];
                         false ->
                           io:format("~p adding ~s~n", [erlang:localtime(), Client#client.player#player.name]),
                           [Client | ClientList]
                       end,
       gen_tcp:send(Client#client.socket, <<"1">>),
-      [send_data(P, ClientList) || P <- lists:keydelete(Client#client.socket, 1, ClientList)],
+      [send_data(P, ClientList) || P <- lists:keydelete(Client#client.socket, 2, ClientList)],
       client_manager(NewClientList);
     {disconnect, Socket} ->
       client_manager(lists:keydelete(Socket, 2, ClientList))
