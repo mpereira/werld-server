@@ -20,10 +20,7 @@ client_manager(ClientList) ->
     {Socket, {all}} ->
       io:format("~p all ~w~n", [erlang:localtime(), Socket]),
       PlayerList = player_list(ClientList),
-      Content = case lists:map(fun werld_server:player_to_binary/1, PlayerList) of
-                  [] -> <<0>>;
-                  L -> list_to_binary(L)
-                end,
+      Content = list_to_binary(lists:map(fun werld_server:player_to_binary/1, PlayerList)),
       PlayerListLength = length(PlayerList),
       gen_tcp:send(Socket, <<PlayerListLength:4/native-unit:8, Content/binary>>),
       client_manager(ClientList);
