@@ -20,30 +20,40 @@ client_manager(ClientList) ->
     {Socket, {all}} ->
       io:format("~p all ~w~n", [erlang:localtime(), Socket]),
       PlayerList = player_list(ClientList),
-      Content = list_to_binary(lists:map(fun werld_server:player_to_binary/1, PlayerList)),
+      Content = list_to_binary(lists:map(fun werld_server:player_to_binary/1,
+                                         PlayerList)),
       PlayerListLength = length(PlayerList),
+      Message = <<PlayerListLength:4/native-unit:8, Content/binary>>,
+      io:format("~p sending ~B bytes ~p~n",
+                [erlang:localtime(),
+                 length(binary:bin_to_list(Message)),
+                 Message]),
+      io:format("~p sending ~p~n",
+                [erlang:localtime(),
+                 <<PlayerListLength:4/native-unit:8, Content/binary>>]),
       gen_tcp:send(Socket, <<PlayerListLength:4/native-unit:8, Content/binary>>),
       client_manager(ClientList);
     {event, Client} ->
-      NewClientList = case lists:member(Client#client.socket, client_list_sockets(ClientList)) of
-                        true ->
-                          [Client | lists:keydelete(Client#client.socket, 2, ClientList)];
-                        false ->
-                          io:format("~p adding ~s~n", [erlang:localtime(), Client#client.player#player.name]),
-                          [Client | ClientList]
-                      end,
+      io:format("~p event ~w~n", [erlang:localtime(), Client#client.socket]),
+      NewClientList =
+        case lists:member(Client#client.socket, client_list_sockets(ClientList)) of
+          true ->
+            [Client | lists:keydelete(Client#client.socket, 2, ClientList)];
+          false ->
+            io:format("~p adding ~s~n",
+                      [erlang:localtime(),
+                       Client#client.player#player.name]),
+            [Client | ClientList]
+        end,
       gen_tcp:send(Client#client.socket, <<"1">>),
-      [send_data(P, ClientList) || P <- lists:keydelete(Client#client.socket, 2, ClientList)],
       client_manager(NewClientList);
     {disconnect, Socket} ->
+      io:format("~p disconnect ~w~n", [erlang:localtime(), Socket]),
       client_manager(lists:keydelete(Socket, 2, ClientList))
   end.
 
 client_list_sockets(ClientList) ->
   lists:map(fun(Client) -> Client#client.socket end, ClientList).
-
-send_data(Client, ClientList) ->
-  gen_tcp:send(Client#client.socket, lists:map(fun werld_server:player_to_binary/1, player_list(ClientList))).
 
 player_list(ClientList) ->
   lists:map(fun(Client) -> Client#client.player end, ClientList).
@@ -64,10 +74,6 @@ loop(Socket) ->
   receive
     {tcp, Socket, <<Id:4/bytes, Name:20/bytes, Y:4/bytes, X:4/bytes>>} ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
-      io:format("~p ~p [~p]~n",
-                [erlang:localtime(),
-                 inet:peername(Socket),
-                 Player]),
       Client = #client{socket = Socket, player = Player},
       client_manager ! {event, Client},
       loop(Socket);
@@ -77,14 +83,16 @@ loop(Socket) ->
     {tcp, Socket, Undefined} ->
       io:format("~p undefined tcp message '~s' from ~w~n",
                 [erlang:localtime(), Undefined, Socket]),
-      gen_tcp:send(Socket, <<"1">>),
+      gen_tcp:send(Socket, <<-1>>),
       loop(Socket);
     {tcp_closed, Socket} ->
       client_manager ! {disconnect, Socket},
       io:format("~p disconnect ~w~n", [erlang:localtime(), Socket]);
     Undefined ->
       io:format("~p undefined message '~s' from ~w~n",
-                [erlang:localtime(), Undefined, Socket])
+                [erlang:localtime(), Undefined, Socket]),
+      gen_tcp:send(Socket, <<-1>>),
+      loop(Socket)
   end.
 
 stop(Pid) ->
