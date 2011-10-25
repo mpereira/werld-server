@@ -20,15 +20,15 @@ client_manager(ClientList) ->
     {Socket, {all}} ->
       io:format("~p all ~w~n", [erlang:localtime(), Socket]),
       PlayerList = player_list(ClientList),
-      Content = list_to_binary(lists:map(fun werld_server:player_to_binary/1,
+      Payload = list_to_binary(lists:map(fun werld_server:player_to_binary/1,
                                          PlayerList)),
       PlayerListLength = length(PlayerList),
-      Message = <<PlayerListLength:4/native-unit:8, Content/binary>>,
+      Data = <<PlayerListLength:4/native-unit:8, Payload/binary>>,
       io:format("~p sending ~B bytes ~p~n",
                 [erlang:localtime(),
-                 length(binary:bin_to_list(Message)),
-                 Message]),
-      gen_tcp:send(Socket, <<PlayerListLength:4/native-unit:8, Content/binary>>),
+                 length(binary:bin_to_list(Data)),
+                 Data]),
+      gen_tcp:send(Socket, Data),
       client_manager(ClientList);
     {event, Client} ->
       io:format("~p event ~w~n", [erlang:localtime(), Client#client.socket]),
@@ -42,7 +42,7 @@ client_manager(ClientList) ->
                        Client#client.player#player.name]),
             [Client | ClientList]
         end,
-      gen_tcp:send(Client#client.socket, <<"1">>),
+      gen_tcp:send(Client#client.socket, <<1>>),
       client_manager(NewClientList);
     {disconnect, Socket} ->
       io:format("~p disconnect ~w~n", [erlang:localtime(), Socket]),
