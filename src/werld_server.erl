@@ -28,9 +28,6 @@ client_manager(ClientList) ->
                 [erlang:localtime(),
                  length(binary:bin_to_list(Message)),
                  Message]),
-      io:format("~p sending ~p~n",
-                [erlang:localtime(),
-                 <<PlayerListLength:4/native-unit:8, Content/binary>>]),
       gen_tcp:send(Socket, <<PlayerListLength:4/native-unit:8, Content/binary>>),
       client_manager(ClientList);
     {event, Client} ->
