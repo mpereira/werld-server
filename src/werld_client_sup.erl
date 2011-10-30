@@ -22,24 +22,34 @@ loop(ClientList) ->
       io:format("~p event ~w~n", [erlang:localtime(), Client#client.socket]),
       % FIXME: update player state more intelligently.
       NewClientList = [Client | werld_client_list:delete(Client, ClientList)],
-      PlayerList = werld_client_list:player_list(NewClientList),
-      Payload = werld_player_list:to_binary(PlayerList),
-      PlayerListLength = length(PlayerList),
-      Data = <<PlayerListLength:4/native-unit:8, Payload/binary>>,
-      io:format("~p sending ~B bytes ~p~n",
-                [erlang:localtime(), length(binary_to_list(Data)), Data]),
-      [gen_tcp:send(S, Data) || S <- werld_client_list:socket_list(ClientList)],
+      notify_clients(NewClientList),
       loop(NewClientList);
     {register, Client} ->
       io:format("~p registering ~s~n",
                 [erlang:localtime(), Client#client.player#player.name]),
+      notify_clients([Client | werld_client_list:delete(Client, ClientList)]),
       loop([Client | ClientList]);
+    {unregister, Client} ->
+      io:format("~p unregistering ~s~n",
+                [erlang:localtime(), Client#client.player#player.name]),
+      NewClientList = werld_client_list:delete(Client, ClientList),
+      notify_clients(NewClientList),
+      loop(NewClientList);
     {disconnect, Socket} ->
       io:format("~p disconnect ~w~n", [erlang:localtime(), Socket]),
       loop(lists:keydelete(Socket, 2, ClientList));
     stop ->
       stop()
   end.
+
+notify_clients(ClientList) ->
+  PlayerList = werld_client_list:player_list(ClientList),
+  Payload = werld_player_list:to_binary(PlayerList),
+  PlayerListLength = length(PlayerList),
+  Data = <<PlayerListLength:4/native-unit:8, Payload/binary>>,
+  io:format("~p sending ~B bytes ~p~n",
+    [erlang:localtime(), length(binary_to_list(Data)), Data]),
+  [gen_tcp:send(S, Data) || S <- werld_client_list:socket_list(ClientList)].
 
 stop() ->
     ok.
