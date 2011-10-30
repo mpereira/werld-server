@@ -31,7 +31,7 @@ loop(Socket) ->
     {tcp, Socket, <<"player", Id:4/bytes, Name:20/bytes, Y:4/bytes, X:4/bytes>>} ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
       Client = #client{socket = Socket, player = Player},
-      client_sup ! {event, Client},
+      client_sup ! {player, Client},
       loop(Socket);
     {tcp, Socket, <<"register", Id:4/bytes, Name:20/bytes, Y:4/bytes, X:4/bytes>>} ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
@@ -44,7 +44,7 @@ loop(Socket) ->
       client_sup ! {unregister, Client},
       loop(Socket);
     {tcp, Socket, <<"players", _/binary>>} ->
-      client_sup ! {Socket, {all}},
+      client_sup ! {players, Socket},
       loop(Socket);
     {tcp, Socket, Undefined} ->
       io:format("~p undefined tcp message '~s' from ~w~n",
@@ -52,7 +52,7 @@ loop(Socket) ->
       gen_tcp:send(Socket, <<-1>>),
       loop(Socket);
     {tcp_closed, Socket} ->
-      client_sup ! {disconnect, Socket};
+      io:format("~p disconnect ~w~n", [erlang:localtime(), Socket]);
     stop ->
       stop();
     Undefined ->
