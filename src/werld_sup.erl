@@ -28,7 +28,7 @@ connect(Listen) ->
 loop(Socket) ->
   inet:setopts(Socket, [{active, once}]),
   receive
-    {tcp, Socket, <<Id:4/bytes, Name:20/bytes, Y:4/bytes, X:4/bytes>>} ->
+    {tcp, Socket, <<"player", Id:4/bytes, Name:20/bytes, Y:4/bytes, X:4/bytes>>} ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
       Client = #client{socket = Socket, player = Player},
       client_sup ! {event, Client},
@@ -38,7 +38,7 @@ loop(Socket) ->
       Client = #client{socket = Socket, player = Player},
       client_sup ! {register, Client},
       loop(Socket);
-    {tcp, Socket, <<"get_players", _/binary>>} ->
+    {tcp, Socket, <<"players", _/binary>>} ->
       client_sup ! {Socket, {all}},
       loop(Socket);
     {tcp, Socket, Undefined} ->
