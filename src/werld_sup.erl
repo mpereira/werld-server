@@ -43,7 +43,7 @@ loop(Socket) ->
       Client = #client{socket = Socket, player = Player},
       client_sup ! {unregister, Client},
       loop(Socket);
-    {tcp, Socket, <<"players", _/binary>>} ->
+    {tcp, Socket, <<"players">>} ->
       client_sup ! {players, Socket},
       loop(Socket);
     {tcp, Socket, Undefined} ->
