@@ -24,7 +24,7 @@ loop(ClientList) ->
       PlayerList = werld_client_list:player_list(ClientList),
       Payload = werld_player_list:to_binary(PlayerList),
       PlayerListLength = length(PlayerList),
-      Data = <<PlayerListLength:4/native-unit:8, Payload/binary>>,
+      Data = <<1:4/native-unit:8, PlayerListLength:4/native-unit:8, Payload/binary>>,
       io:format("~p sending ~B bytes to ~p ~p~n",
                 [erlang:localtime(), length(binary_to_list(Data)), Socket, Data]),
       gen_tcp:send(Socket, Data),
@@ -35,6 +35,10 @@ loop(ClientList) ->
       NewClientList = [Client | werld_client_list:delete(Client, ClientList)],
       notify_clients(NewClientList),
       loop(NewClientList);
+    {message, Client, Message} ->
+      io:format("~p message from ~w ~s~n", [erlang:localtime(), Client#client.socket, Message]),
+      werld_client_list:multicast_message(Message, Client, ClientList),
+      loop(ClientList);
     stop ->
       stop()
   end.
@@ -43,7 +47,7 @@ notify_clients(ClientList) ->
   PlayerList = werld_client_list:player_list(ClientList),
   Payload = werld_player_list:to_binary(PlayerList),
   PlayerListLength = length(PlayerList),
-  Data = <<PlayerListLength:4/native-unit:8, Payload/binary>>,
+  Data = <<1:4/native-unit:8, PlayerListLength:4/native-unit:8, Payload/binary>>,
   io:format("~p sending ~B bytes ~p~n",
             [erlang:localtime(), length(binary_to_list(Data)), Data]),
   [gen_tcp:send(S, Data) || S <- werld_client_list:socket_list(ClientList)].

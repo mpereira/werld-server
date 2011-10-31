@@ -28,6 +28,9 @@ connect(Listen) ->
 loop(Socket) ->
   inet:setopts(Socket, [{active, once}]),
   receive
+    {tcp, Socket, <<"players">>} ->
+      client_sup ! {players, Socket},
+      loop(Socket);
     {tcp, Socket, <<"player", Id:4/bytes, Name:20/bytes, Y:4/bytes, X:4/bytes>>} ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
       Client = #client{socket = Socket, player = Player},
@@ -43,8 +46,10 @@ loop(Socket) ->
       Client = #client{socket = Socket, player = Player},
       client_sup ! {unregister, Client},
       loop(Socket);
-    {tcp, Socket, <<"players">>} ->
-      client_sup ! {players, Socket},
+    {tcp, Socket, <<"message", Id:4/bytes, Name:20/bytes, Y:4/bytes, X:4/bytes, Message/binary>>} ->
+      Player = #player{id = Id, name = Name, y = Y, x = X},
+      Client = #client{socket = Socket, player = Player},
+      client_sup ! {message, Client, Message},
       loop(Socket);
     {tcp, Socket, Undefined} ->
       io:format("~p undefined tcp message '~s' from ~w~n",
