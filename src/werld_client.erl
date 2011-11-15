@@ -2,9 +2,10 @@
 -compile([export_all]).
 -include("include/player.hrl").
 -include("include/client.hrl").
+-include("include/response_types.hrl").
 
 send_message(Message, Sender, Recipient) ->
-  Payload = [<<0:4/native-unit:8>>,
+  Payload = [<<?WERLD_RESPONSE_TYPE_MESSAGE:4/native-unit:8>>,
              <<(length(binary_to_list(Message))):4/native-unit:8>>,
              werld_player:to_binary(Sender#client.player),
              Message],
