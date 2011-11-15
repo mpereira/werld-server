@@ -1,0 +1,16 @@
+TODO
+
+* restart stuff when something shit happens.
+
+* use OTP behaviors (need to level up on erlang first).
+
+* disconnect should lookup client list by socket, remove the matching client
+  record and multicast this event. this is a better approach than the client
+  having to send an unregister event.
+
+* when receiving a player event, multicast only that player instead of the
+  entire player list.
+
+DONE
+
+* add client on connect rather than only when an event occurs.
