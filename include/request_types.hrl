@@ -1,0 +1,5 @@
+-define(WERLD_REQUEST_TYPE_PLAYER,     0:8/unsigned).
+-define(WERLD_REQUEST_TYPE_PLAYERS,    1:8/unsigned).
+-define(WERLD_REQUEST_TYPE_REGISTER,   2:8/unsigned).
+-define(WERLD_REQUEST_TYPE_UNREGISTER, 3:8/unsigned).
+-define(WERLD_REQUEST_TYPE_MESSAGE,    4:8/unsigned).

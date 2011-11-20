@@ -3,6 +3,7 @@
 -include("../include/werld.hrl").
 -include("../include/client.hrl").
 -include("../include/player.hrl").
+-include("../include/request_types.hrl").
 
 start_link() ->
   spawn_link(?MODULE, init, []).
@@ -28,25 +29,42 @@ connect(Listen) ->
 loop(Socket) ->
   inet:setopts(Socket, [{active, once}]),
   receive
-    {tcp, Socket, <<"players">>} ->
-      client_sup ! {players, Socket},
-      loop(Socket);
-    {tcp, Socket, <<"player", Id:4/bytes, Name:20/bytes, Y:4/bytes, X:4/bytes>>} ->
+    {tcp, Socket, <<?WERLD_REQUEST_TYPE_PLAYER,
+                    Id:4/bytes,
+                    Name:20/bytes,
+                    Y:4/bytes,
+                    X:4/bytes>>} ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
       Client = #client{socket = Socket, player = Player},
       client_sup ! {player, Client},
       loop(Socket);
-    {tcp, Socket, <<"register", Id:4/bytes, Name:20/bytes, Y:4/bytes, X:4/bytes>>} ->
+    {tcp, Socket, <<?WERLD_REQUEST_TYPE_PLAYERS>>} ->
+      client_sup ! {players, Socket},
+      loop(Socket);
+    {tcp, Socket, <<?WERLD_REQUEST_TYPE_REGISTER,
+                    Id:4/bytes,
+                    Name:20/bytes,
+                    Y:4/bytes,
+                    X:4/bytes>>} ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
       Client = #client{socket = Socket, player = Player},
       client_sup ! {register, Client},
       loop(Socket);
-    {tcp, Socket, <<"unregister", Id:4/bytes, Name:20/bytes, Y:4/bytes, X:4/bytes>>} ->
+    {tcp, Socket, <<?WERLD_REQUEST_TYPE_UNREGISTER,
+                    Id:4/bytes,
+                    Name:20/bytes,
+                    Y:4/bytes,
+                    X:4/bytes>>} ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
       Client = #client{socket = Socket, player = Player},
       client_sup ! {unregister, Client},
       loop(Socket);
-    {tcp, Socket, <<"message", Id:4/bytes, Name:20/bytes, Y:4/bytes, X:4/bytes, Message/binary>>} ->
+    {tcp, Socket, <<?WERLD_REQUEST_TYPE_MESSAGE,
+                    Id:4/bytes,
+                    Name:20/bytes,
+                    Y:4/bytes,
+                    X:4/bytes,
+                    Message/binary>>} ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
       Client = #client{socket = Socket, player = Player},
       client_sup ! {message, Client, Message},
