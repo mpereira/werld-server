@@ -1,5 +1,4 @@
 TODO
-
 * restart stuff when shit happens.
 
 * use OTP behaviors (need to level up on erlang first).
@@ -11,6 +10,11 @@ TODO
 * when receiving a player event, multicast only that player instead of the
   entire player list.
 
-DONE
+* generate data shared between projects (e.g. response types) programatically
+  from metadata.
 
+* discover root cause of smushed TCP packets when the network latency is higher
+  than loopback's.
+
+DONE
 * add client on connect rather than only when an event occurs.
