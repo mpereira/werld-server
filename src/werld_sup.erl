@@ -6,23 +6,21 @@
 -include("../include/request_types.hrl").
 
 start_link() ->
-  spawn_link(?MODULE, init, []).
-
-init() ->
-  Pid = spawn_link(fun() ->
-    {ok, Listen} = gen_tcp:listen(?LISTEN_PORT, ?TCP_OPTIONS),
-    io:format("~p listening on port ~w~n", [erlang:localtime(), ?LISTEN_PORT]),
-    register(client_sup, werld_client_sup:start_link()),
-    spawn_link(?MODULE, connect, [Listen]),
-    timer:sleep(infinity)
-  end),
+  Pid = spawn_link(?MODULE, init, []),
   {ok, Pid}.
 
-connect(Listen) ->
+init() ->
+  {ok, Listen} = gen_tcp:listen(?LISTEN_PORT, ?TCP_OPTIONS),
+  io:format("~p listening on port ~w~n", [erlang:localtime(), ?LISTEN_PORT]),
+  register(client_sup, werld_client_sup:start_link()),
+  spawn_link(?MODULE, acceptor, [Listen]),
+  timer:sleep(infinity).
+
+acceptor(Listen) ->
   {ok, Socket} = gen_tcp:accept(Listen),
-  io:format("~p connect ~w~n", [erlang:localtime(), Socket]),
+  io:format("~p connection ~w~n", [erlang:localtime(), Socket]),
   inet:setopts(Socket, ?TCP_OPTIONS),
-  spawn(?MODULE, connect, [Listen]),
+  spawn(?MODULE, acceptor, [Listen]),
   loop(Socket),
   gen_tcp:close(Socket).
 
