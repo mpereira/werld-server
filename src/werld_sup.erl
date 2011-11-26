@@ -1,26 +1,30 @@
 -module(werld_sup).
 -compile([export_all]).
--include("../include/werld.hrl").
 -include("../include/client.hrl").
 -include("../include/player.hrl").
 -include("../include/request_types.hrl").
+
+-define(LISTEN_PORT, 9876).
+-define(LISTEN_TCP_OPTIONS, [binary, {packet, raw}, {active, false}]).
 
 start_link() ->
   Pid = spawn_link(?MODULE, init, []),
   {ok, Pid}.
 
 init() ->
-  {ok, Listen} = gen_tcp:listen(?LISTEN_PORT, ?TCP_OPTIONS),
+  spawn_link(?MODULE, listener, []),
+  register(client_sup, werld_client_sup:start_link()).
+
+listener() ->
+  {ok, ListenSocket} = gen_tcp:listen(?LISTEN_PORT, ?LISTEN_TCP_OPTIONS),
   io:format("~p listening on port ~w~n", [erlang:localtime(), ?LISTEN_PORT]),
-  register(client_sup, werld_client_sup:start_link()),
-  spawn_link(?MODULE, acceptor, [Listen]),
+  spawn(?MODULE, acceptor, [ListenSocket]),
   timer:sleep(infinity).
 
-acceptor(Listen) ->
-  {ok, Socket} = gen_tcp:accept(Listen),
+acceptor(ListenSocket) ->
+  {ok, Socket} = gen_tcp:accept(ListenSocket),
   io:format("~p connection ~w~n", [erlang:localtime(), Socket]),
-  inet:setopts(Socket, ?TCP_OPTIONS),
-  spawn(?MODULE, acceptor, [Listen]),
+  spawn(?MODULE, acceptor, [ListenSocket]),
   loop(Socket),
   gen_tcp:close(Socket).
 
