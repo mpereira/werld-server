@@ -28,7 +28,7 @@ multicast_player_list_except(Client, ClientList) ->
   PlayerList = werld_client_list:player_list(ClientList),
   Payload = werld_player_list:to_binary(PlayerList),
   PlayerListLength = length(PlayerList),
-  Data = <<?WERLD_RESPONSE_TYPE_PLAYERS:4/native-unit:8,
+  Data = <<?WERLD_RESPONSE_TYPE_PLAYERS,
            PlayerListLength:4/native-unit:8,
            Payload/binary>>,
   io:format("~p multicasting ~B bytes ~p~n",
