@@ -3,6 +3,7 @@
 -include("../include/client.hrl").
 -include("../include/player.hrl").
 -include("../include/request_types.hrl").
+-include("../include/maps.hrl").
 
 -define(LISTEN_PORT, 9876).
 -define(LISTEN_TCP_OPTIONS, [binary, {packet, raw}, {active, false}]).
@@ -70,6 +71,9 @@ loop(Socket) ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
       Client = #client{socket = Socket, player = Player},
       client_sup ! {message, Client, Message},
+      loop(Socket);
+    {tcp, Socket, <<?WERLD_REQUEST_TYPE_MAP, Map:8/unsigned>>} ->
+      client_sup ! {map, Socket, Map},
       loop(Socket);
     {tcp, Socket, Undefined} ->
       io:format("~p undefined tcp message '~s' from ~w~n",

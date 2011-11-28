@@ -1,13 +1,18 @@
 -module(werld_client_sup).
 -compile([export_all]).
 -include("../include/client.hrl").
+-include("../include/maps.hrl").
 -include("../include/player.hrl").
 -include("../include/response_types.hrl").
 
-start_link() ->
-  spawn_link(?MODULE, loop, [[]]).
+-record(state, { client_list=[], map=undefined}).
 
-loop(ClientList) ->
+start_link() ->
+  Map = werld_map:build(?WERLD_MAPS_WORLD),
+  io:format("~p built map ~p~n", [erlang:localtime(), Map]),
+  spawn_link(?MODULE, loop, [#state{client_list=[], map=Map}]).
+
+loop(#state{} = State) ->
   receive
     {register, Client} ->
       io:format("~p registering ~s~n",
@@ -23,7 +28,7 @@ loop(ClientList) ->
                     player{id = crypto:rand_bytes(4),
                            y = <<(random:uniform(10)):32/integer-little>>,
                            x = <<(random:uniform(10)):32/integer-little>>}},
-      NewClientList = [RegisteredClient | ClientList],
+      NewClientList = [RegisteredClient | State#state.client_list],
       werld_client_list:multicast_player_list_except(RegisteredClient,
                                                      NewClientList),
       Payload = werld_player:to_binary(RegisteredClient#client.player),
@@ -35,16 +40,16 @@ loop(ClientList) ->
                  ClientSocket,
                  Data]),
       gen_tcp:send(ClientSocket, Data),
-      loop(NewClientList);
+      loop(State#state{client_list = NewClientList});
     {unregister, Client} ->
       io:format("~p unregistering ~s~n",
                 [erlang:localtime(), Client#client.player#player.name]),
-      NewClientList = werld_client_list:delete(Client, ClientList),
+      NewClientList = werld_client_list:delete(Client, State#state.client_list),
       werld_client_list:multicast_player_list(NewClientList),
-      loop(NewClientList);
+      loop(State#state{client_list = NewClientList});
     {players, Socket} ->
       io:format("~p players ~w~n", [erlang:localtime(), Socket]),
-      PlayerList = werld_client_list:player_list(ClientList),
+      PlayerList = werld_client_list:player_list(State#state.client_list),
       Payload = werld_player_list:to_binary(PlayerList),
       PlayerListLength = length(PlayerList),
       Data = <<?WERLD_RESPONSE_TYPE_PLAYERS,
@@ -53,18 +58,26 @@ loop(ClientList) ->
       io:format("~p sending ~B bytes to ~p ~p~n",
                 [erlang:localtime(), length(binary_to_list(Data)), Socket, Data]),
       gen_tcp:send(Socket, Data),
-      loop(ClientList);
+      loop(State);
     {player, Client} ->
       io:format("~p player ~w~n", [erlang:localtime(), Client#client.socket]),
       % FIXME: update player state more intelligently.
-      NewClientList = [Client | werld_client_list:delete(Client, ClientList)],
+      NewClientList =
+        [Client | werld_client_list:delete(Client, State#state.client_list)],
       werld_client_list:multicast_player_list(NewClientList),
-      loop(NewClientList);
+      loop(State#state{client_list = NewClientList});
     {message, Client, Message} ->
       io:format("~p message from ~w ~s~n",
                 [erlang:localtime(), Client#client.socket, Message]),
-      werld_client_list:multicast_message(Message, Client, ClientList),
-      loop(ClientList);
+      werld_client_list:multicast_message(Message, Client, State#state.client_list),
+      loop(State);
+    {map, Socket, _Map} ->
+      io:format("~p map requested from ~w~n", [erlang:localtime(), Socket]),
+      Client =
+        werld_client_list:find_client_by_socket(Socket, State#state.client_list),
+      Map = State#state.map,
+      werld_client:send_map(Map, Client),
+      loop(State);
     stop ->
       stop()
   end.

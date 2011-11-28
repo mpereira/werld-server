@@ -17,6 +17,9 @@ delete([], ClientList) ->
 delete(Client, ClientList) ->
   lists:keydelete(Client#client.socket, 2, ClientList).
 
+find_client_by_socket(Socket, ClientList) ->
+  lists:keyfind(Socket, 2, ClientList).
+
 multicast_message(Message, Sender, ClientList) ->
   [werld_client:send_message(Message, Sender, Recipient) ||
    Recipient <- ClientList].

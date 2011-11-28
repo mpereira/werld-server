@@ -5,6 +5,8 @@
 -include("include/player.hrl").
 -include("include/response_types.hrl").
 
+% TODO: We're only sending the world map for now. Make this parameterizable when
+% we have more maps.
 send_map(Map, Client) ->
   Payload = [<<?WERLD_RESPONSE_TYPE_MAP>>,
              <<?WERLD_MAPS_WORLD:8/unsigned>>,
