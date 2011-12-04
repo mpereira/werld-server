@@ -52,15 +52,6 @@ loop(Socket) ->
       Client = #client{socket = Socket, player = Player},
       client_sup ! {register, Client},
       loop(Socket);
-    {tcp, Socket, <<?WERLD_REQUEST_TYPE_UNREGISTER,
-                    Id:4/bytes,
-                    Name:20/bytes,
-                    Y:4/bytes,
-                    X:4/bytes>>} ->
-      Player = #player{id = Id, name = Name, y = Y, x = X},
-      Client = #client{socket = Socket, player = Player},
-      client_sup ! {unregister, Client},
-      loop(Socket);
     {tcp, Socket, <<?WERLD_REQUEST_TYPE_MESSAGE,
                     Id:4/bytes,
                     Name:20/bytes,
@@ -80,7 +71,7 @@ loop(Socket) ->
       gen_tcp:send(Socket, <<-1>>),
       loop(Socket);
     {tcp_closed, Socket} ->
-      io:format("~p disconnect ~w~n", [erlang:localtime(), Socket]);
+      client_sup ! {disconnect, Socket};
     stop ->
       stop();
     Undefined ->

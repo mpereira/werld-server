@@ -41,9 +41,10 @@ loop(#state{} = State) ->
                  Data]),
       gen_tcp:send(ClientSocket, Data),
       loop(State#state{client_list = NewClientList});
-    {unregister, Client} ->
-      io:format("~p unregistering ~s~n",
-                [erlang:localtime(), Client#client.player#player.name]),
+    {disconnect, Socket} ->
+      Client =
+        werld_client_list:find_client_by_socket(Socket, State#state.client_list),
+      io:format("~p disconnect ~p~n", [erlang:localtime(), Socket]),
       NewClientList = werld_client_list:delete(Client, State#state.client_list),
       werld_client_list:multicast_player_list(NewClientList),
       loop(State#state{client_list = NewClientList});
