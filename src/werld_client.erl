@@ -1,7 +1,7 @@
 -module(werld_client).
 -compile([export_all]).
 -include("include/client.hrl").
--include("include/maps.hrl").
+-include("include/map.hrl").
 -include("include/player.hrl").
 -include("include/response_types.hrl").
 
@@ -9,7 +9,7 @@
 % we have more maps.
 send_map(Map, Client) ->
   Payload = [<<?WERLD_RESPONSE_TYPE_MAP>>,
-             <<?WERLD_MAPS_WORLD:8/unsigned>>,
+             <<?WERLD_MAP_WORLD:8/unsigned>>,
              werld_map:to_binary(Map)],
   io:format("~p sending map to ~p ~p~n", [erlang:localtime(), Client#client.socket, Payload]),
   gen_tcp:send(Client#client.socket, Payload).

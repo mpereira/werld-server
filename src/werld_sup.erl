@@ -3,10 +3,9 @@
 -include("../include/client.hrl").
 -include("../include/player.hrl").
 -include("../include/request_types.hrl").
--include("../include/maps.hrl").
 
 -define(LISTEN_PORT, 9876).
--define(LISTEN_TCP_OPTIONS, [binary, {packet, raw}, {active, false}]).
+-define(LISTEN_TCP_OPTIONS, [binary, {packet, raw}, {reuseaddr, true}, {active, false}]).
 
 start_link() ->
   Pid = spawn_link(?MODULE, init, []),

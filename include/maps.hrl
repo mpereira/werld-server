@@ -1,1 +1,0 @@
--define(WERLD_MAPS_WORLD, 0).
