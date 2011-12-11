@@ -30,6 +30,24 @@ build(_) ->
     lists:seq(3 + ((Width - 10) * Height), 6 + ((Width - 10) * Height)) ++
     lists:seq(4 + ((Width - 9) * Height), 6 + ((Width - 9) * Height)) ++
     lists:seq(4 + ((Width - 8) * Height), 5 + ((Width - 8) * Height)),
+  % TODO: MY EYES.
+  WaterTileIndexes =
+    lists:seq(10 + ((Width - 62) * Height), 9 + ((Width - 62) * Height)) ++
+    lists:seq(9 + ((Width - 62) * Height), 11 + ((Width - 62) * Height)) ++
+    lists:seq(8 + ((Width - 61) * Height), 11 + ((Width - 61) * Height)) ++
+    lists:seq(7 + ((Width - 60) * Height), 13 + ((Width - 60) * Height)) ++
+    lists:seq(7 + ((Width - 59) * Height), 14 + ((Width - 59) * Height)) ++
+    lists:seq(7 + ((Width - 58) * Height), 14 + ((Width - 58) * Height)) ++
+    lists:seq(7 + ((Width - 57) * Height), 15 + ((Width - 57) * Height)) ++
+    lists:seq(7 + ((Width - 56) * Height), 15 + ((Width - 56) * Height)) ++
+    lists:seq(6 + ((Width - 55) * Height), 15 + ((Width - 55) * Height)) ++
+    lists:seq(6 + ((Width - 54) * Height), 15 + ((Width - 54) * Height)) ++
+    lists:seq(6 + ((Width - 53) * Height), 14 + ((Width - 53) * Height)) ++
+    lists:seq(6 + ((Width - 52) * Height), 14 + ((Width - 52) * Height)) ++
+    lists:seq(7 + ((Width - 51) * Height), 14 + ((Width - 51) * Height)) ++
+    lists:seq(7 + ((Width - 50) * Height), 13 + ((Width - 50) * Height)) ++
+    lists:seq(8 + ((Width - 49) * Height), 13 + ((Width - 49) * Height)) ++
+    lists:seq(8 + ((Width - 48) * Height), 12 + ((Width - 48) * Height)),
   TilesWithWalls =
     array:map(fun(Index, Tile) ->
                 case lists:member(Index, WallTileIndexes) of
@@ -45,7 +63,14 @@ build(_) ->
                   false -> Tile
                 end
               end, TilesWithWalls),
-  #map{width = Width, height = Height, tiles = TilesWithDirts}.
+  TilesWithWater =
+    array:map(fun(Index, Tile) ->
+                case lists:member(Index, WaterTileIndexes) of
+                  true -> <<?WERLD_TILE_TYPE_WATER:8/unsigned, 0:8/unsigned>>;
+                  false -> Tile
+                end
+              end, TilesWithDirts),
+  #map{width = Width, height = Height, tiles = TilesWithWater}.
 
 to_binary(Map) ->
   <<(Map#map.width):32/integer-little,
