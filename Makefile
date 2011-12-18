@@ -1,9 +1,13 @@
-EBIN_DIR = ebin
+.PHONY: deps
 
-all: werld_server
+all: deps
+	@(./rebar compile)
 
-werld_server:
-	erl -make
+deps:
+	@(./rebar get-deps)
 
 clean:
-	rm -rf ${EBIN_DIR}/*.beam
+	@(./rebar clean)
+
+distclean: clean
+	@(./rebar delete-deps)
