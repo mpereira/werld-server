@@ -1,0 +1,12 @@
+{application, werld, [{description,"Werld Online server"},
+                      {vsn,"0.0.0"},
+                      {modules,[]},
+                      {registered, []},
+                      {applications, [kernel,
+                                      stdlib,
+                                      inets,
+                                      crypto,
+                                      mochiweb,
+                                      webmachine]},
+                      {mod, {werld_app,[]}},
+                      {env, []}]}.
