@@ -1,8 +1,9 @@
 -module(werld).
--compile(export_all).
+
+-export([start/0, stop/0]).
 
 start() ->
-  werld_sup:start_link().
+  werld_sockserv:start_link().
 
 stop() ->
-  werld_sup:stop().
+  werld_sockserv:stop().

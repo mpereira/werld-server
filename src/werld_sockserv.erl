@@ -1,8 +1,12 @@
--module(werld_sup).
--compile([export_all]).
+-module(werld_sockserv).
+
 -include("../include/client.hrl").
 -include("../include/player.hrl").
 -include("../include/request_types.hrl").
+
+-export([start_link/0]).
+
+-export([init/0, listener/0, acceptor/1, loop/1, stop/0]).
 
 -define(LISTEN_PORT, 9876).
 -define(LISTEN_TCP_OPTIONS, [binary, {packet, raw}, {reuseaddr, true}, {active, false}]).
@@ -13,7 +17,7 @@ start_link() ->
 
 init() ->
   spawn_link(?MODULE, listener, []),
-  register(client_sup, werld_client_sup:start_link()).
+  register(werld_evserv, werld_evserv:start_link()).
 
 listener() ->
   {ok, ListenSocket} = gen_tcp:listen(?LISTEN_PORT, ?LISTEN_TCP_OPTIONS),
@@ -38,10 +42,10 @@ loop(Socket) ->
                     X:4/bytes>>} ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
       Client = #client{socket = Socket, player = Player},
-      client_sup ! {player, Client},
+      werld_evserv ! {player, Client},
       loop(Socket);
     {tcp, Socket, <<?WERLD_REQUEST_TYPE_PLAYERS>>} ->
-      client_sup ! {players, Socket},
+      werld_evserv ! {players, Socket},
       loop(Socket);
     {tcp, Socket, <<?WERLD_REQUEST_TYPE_REGISTER,
                     Id:4/bytes,
@@ -50,7 +54,7 @@ loop(Socket) ->
                     X:4/bytes>>} ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
       Client = #client{socket = Socket, player = Player},
-      client_sup ! {register, Client},
+      werld_evserv ! {register, Client},
       loop(Socket);
     {tcp, Socket, <<?WERLD_REQUEST_TYPE_MESSAGE,
                     Id:4/bytes,
@@ -60,10 +64,10 @@ loop(Socket) ->
                     Message/binary>>} ->
       Player = #player{id = Id, name = Name, y = Y, x = X},
       Client = #client{socket = Socket, player = Player},
-      client_sup ! {message, Client, Message},
+      werld_evserv ! {message, Client, Message},
       loop(Socket);
     {tcp, Socket, <<?WERLD_REQUEST_TYPE_MAP, Map:8/unsigned>>} ->
-      client_sup ! {map, Socket, Map},
+      werld_evserv ! {map, Socket, Map},
       loop(Socket);
     {tcp, Socket, Undefined} ->
       io:format("~p undefined tcp message '~s' from ~w~n",
@@ -71,7 +75,7 @@ loop(Socket) ->
       gen_tcp:send(Socket, <<-1>>),
       loop(Socket);
     {tcp_closed, Socket} ->
-      client_sup ! {disconnect, Socket};
+      werld_evserv ! {disconnect, Socket};
     stop ->
       stop();
     Undefined ->

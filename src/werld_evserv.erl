@@ -1,11 +1,15 @@
--module(werld_client_sup).
--compile([export_all]).
+-module(werld_evserv).
+
 -include("../include/client.hrl").
 -include("../include/map.hrl").
 -include("../include/player.hrl").
 -include("../include/response_types.hrl").
 
--record(state, { client_list=[], map=undefined}).
+-export([start_link/0]).
+
+-export([loop/1, stop/0]).
+
+-record(state, {client_list=[], map=undefined}).
 
 start_link() ->
   Map = werld_map:build(?WERLD_MAP_WORLD),
