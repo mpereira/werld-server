@@ -1,7 +1,22 @@
+%% @author Murilo Pereira <murilo@murilopereira.com>
+%% @copyright 2011 Murilo Pereira.
+
+%% @doc werld_client_list.
+
 -module(werld_client_list).
--compile([export_all]).
+-author('Murilo Pereira <murilo@murilopereira.com>').
+
 -include("../include/client.hrl").
 -include("include/response_types.hrl").
+
+-export([player_list/1,
+         socket_list/1,
+         member/2,
+         delete/2,
+         find_client_by_socket/2,
+         multicast_message/3,
+         multicast_player_list/1,
+         multicast_player_list_except/2]).
 
 player_list(ClientList) ->
   lists:map(fun(Client) -> Client#client.player end, ClientList).

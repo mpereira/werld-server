@@ -1,4 +1,10 @@
+%% @author Murilo Pereira <murilo@murilopereira.com>
+%% @copyright 2011 Murilo Pereira.
+
+%% @doc werld_evserv.
+
 -module(werld_evserv).
+-author('Murilo Pereira <murilo@murilopereira.com>').
 
 -include("../include/client.hrl").
 -include("../include/map.hrl").

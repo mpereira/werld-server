@@ -1,0 +1,11 @@
+{application,werld_httpserv,
+             [{description,"Werld Online HTTP server"},
+              {vsn,"0.0.0"},
+              {modules,[werld,werld_client,werld_client_list,werld_evserv,
+                        werld_httpserv,werld_httpserv_app,werld_httpserv_sup,
+                        werld_map,werld_mnesia_tables,werld_player,
+                        werld_player_list,werld_sockserv,werld_user_resource]},
+              {registered,[]},
+              {applications,[kernel,stdlib,inets,crypto,mochiweb,webmachine]},
+              {mod,{werld_httpserv_app,[]}},
+              {env,[]}]}.
