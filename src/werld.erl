@@ -20,7 +20,7 @@ start() ->
   werld_mnesia:create_schema([node()]),
   ensure_started(mnesia),
   werld_mnesia:create_tables(),
-  HttpServReturn = application:start(werld_httpserv),
+  HttpServReturn = werld_httpserv:start(),
   SockServReturn = werld_sockserv:start(),
   EvServReturn = werld_evserv:start(),
   [{sockserv, SockServReturn},
