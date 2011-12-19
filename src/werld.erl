@@ -17,8 +17,9 @@ ensure_started(App) ->
   end.
 
 start() ->
+  werld_mnesia:create_schema([node()]),
   ensure_started(mnesia),
-  werld_mnesia_tables:init(),
+  werld_mnesia:create_tables(),
   HttpServReturn = application:start(werld_httpserv),
   SockServReturn = werld_sockserv:start(),
   EvServReturn = werld_evserv:start(),
@@ -27,8 +28,9 @@ start() ->
    {httpserv, HttpServReturn}].
 
 start_link() ->
+  werld_mnesia:create_schema([node()]),
   ensure_started(mnesia),
-  werld_mnesia_tables:init(),
+  werld_mnesia:create_tables(),
   HttpServReturn = werld_httpserv:start_link(),
   SockServReturn = werld_sockserv:start_link(),
   EvServReturn = werld_evserv:start_link(),

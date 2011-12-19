@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 
 cd `dirname $0`
-exec erl -pa $PWD/ebin $PWD/deps/*/ebin -boot start_sasl -s werld
+exec erl -pa $PWD/ebin $PWD/deps/*/ebin -mnesia dir '"db"' -s werld
