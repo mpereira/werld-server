@@ -11,11 +11,16 @@
 -include("../include/player.hrl").
 -include("../include/response_types.hrl").
 
--export([start_link/0]).
+-export([start/0, start_link/0]).
 
 -export([loop/1, stop/0]).
 
 -record(state, {client_list=[], map=undefined}).
+
+start() ->
+  Map = werld_map:build(?WERLD_MAP_WORLD),
+  io:format("~p built map ~p~n", [erlang:localtime(), Map]),
+  spawn(?MODULE, loop, [#state{client_list=[], map=Map}]).
 
 start_link() ->
   Map = werld_map:build(?WERLD_MAP_WORLD),
