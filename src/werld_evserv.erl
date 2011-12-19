@@ -29,14 +29,6 @@ start_link() ->
 
 loop(#state{} = State) ->
   receive
-    {authenticate, Client} ->
-      io:format("~p authenticate ~s~n",
-                [erlang:localtime(), Client#client.player#player.name]),
-      % if player = Player.find_by_account(account)
-      % else
-      %   Player doesn't exist.
-      % end
-      loop(State);
     {register, Client} ->
       io:format("~p registering ~s~n",
                 [erlang:localtime(), Client#client.player#player.name]),

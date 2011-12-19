@@ -46,13 +46,6 @@ acceptor(ListenSocket) ->
 loop(Socket) ->
   inet:setopts(Socket, [{active, once}]),
   receive
-    {tcp, Socket, <<?WERLD_REQUEST_TYPE_AUTHENTICATE,
-                     AccountStringSize:4/bytes,
-                     PasswordStringSize:4/bytes,
-                     Account:AccountStringSize,
-                     Password:PasswordStringSize>>} ->
-      client_sup ! {authenticate, Socket, {Account, Password}},
-      loop(Socket);
     {tcp, Socket, <<?WERLD_REQUEST_TYPE_PLAYER,
                     Id:4/bytes,
                     Name:20/bytes,
