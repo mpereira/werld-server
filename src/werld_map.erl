@@ -1,7 +1,15 @@
+%% @author Murilo Pereira <murilo@murilopereira.com>
+%% @copyright 2011 Murilo Pereira.
+
+%% @doc werld_map.
+
 -module(werld_map).
--compile([export_all]).
+-author('Murilo Pereira <murilo@murilopereira.com>').
+
 -include("../include/map.hrl").
 -include("../include/tile.hrl").
+
+-export([build/1, to_binary/1]).
 
 % TODO: we're currently ignoring the map type. In the future we'll have more
 % than one type of map, so we'll need to build different maps.

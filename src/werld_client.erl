@@ -1,9 +1,17 @@
+%% @author Murilo Pereira <murilo@murilopereira.com>
+%% @copyright 2011 Murilo Pereira.
+
+%% @doc werld_client.
+
 -module(werld_client).
--compile([export_all]).
+-author('Murilo Pereira <murilo@murilopereira.com>').
+
 -include("include/client.hrl").
 -include("include/map.hrl").
 -include("include/player.hrl").
 -include("include/response_types.hrl").
+
+-export([send_map/2, send_message/3]).
 
 % TODO: We're only sending the world map for now. Make this parameterizable when
 % we have more maps.

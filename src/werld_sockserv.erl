@@ -1,15 +1,26 @@
+%% @author Murilo Pereira <murilo@murilopereira.com>
+%% @copyright 2011 Murilo Pereira.
+
+%% @doc werld_sockserv.
+
 -module(werld_sockserv).
+-author('Murilo Pereira <murilo@murilopereira.com>').
+
+-define(LISTEN_PORT, 9876).
+-define(LISTEN_TCP_OPTIONS,
+        [binary, {packet, raw}, {reuseaddr, true}, {active, false}]).
 
 -include("../include/client.hrl").
 -include("../include/player.hrl").
 -include("../include/request_types.hrl").
 
--export([start_link/0]).
+-export([start/0, start_link/0, stop/0]).
 
--export([init/0, listener/0, acceptor/1, loop/1, stop/0]).
+-export([init/0, listener/0, acceptor/1, loop/1]).
 
--define(LISTEN_PORT, 9876).
--define(LISTEN_TCP_OPTIONS, [binary, {packet, raw}, {reuseaddr, true}, {active, false}]).
+start() ->
+  Pid = spawn(?MODULE, init, []),
+  {ok, Pid}.
 
 start_link() ->
   Pid = spawn_link(?MODULE, init, []),

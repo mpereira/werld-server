@@ -1,0 +1,14 @@
+% -*- mode: erlang -*-
+
+{application, werld_httpserv, [{description,"Werld Online HTTP server"},
+                               {vsn,"0.0.0"},
+                               {modules,[]},
+                               {registered, []},
+                               {applications, [kernel,
+                                               stdlib,
+                                               inets,
+                                               crypto,
+                                               mochiweb,
+                                               webmachine]},
+                               {mod, {werld_httpserv_app,[]}},
+                               {env, []}]}.
